@@ -1,5 +1,7 @@
 # 🍕 Umsatzanalyse einer Pizzeria
 
+**817.860 $ Umsatz · 21.350 Bestellungen · Ø 38,31 $ pro Bestellung**
+
 Analyse der Verkaufsdaten einer Pizzeria für das Jahr 2015 mit SQL und Tableau: Umsatz, Stoßzeiten, Bestseller und Empfehlungen zur Speisekarte.
 
 ## 1. Datenquelle
