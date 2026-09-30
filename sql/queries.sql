@@ -13,12 +13,6 @@ SELECT COUNT(*) AS row_count FROM order_details;  -- 48620
 SELECT COUNT(*) AS row_count FROM pizzas;         -- 96
 SELECT COUNT(*) AS row_count FROM pizza_types;    -- 32
 
-
-
-Следующий шаг: проверяем пропуски (по методичке: «fehlende Werte prüfen»)
-
-Что делаем: для каждой таблицы считаем пустые значения по каждой колонке, одним запросом на таблицу.
-
 -- 0.2 Missing values per column (NULL or empty string)
 SELECT
   SUM(CASE WHEN order_id IS NULL OR order_id = '' THEN 1 ELSE 0 END) AS order_id_missing,
