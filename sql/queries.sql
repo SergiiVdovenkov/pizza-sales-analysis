@@ -103,7 +103,7 @@ FROM base;
 -- • 2015: Umsatz 817.860 $ (total_revenue), 21.350 Bestellungen (total_orders),
 --   49.574 Pizzen (pizzas_sold).
 -- • Ø Bestellwert 38,31 $ (817.860 / 21.350), Ø 2,32 Pizzen pro Bestellung
---   (49.574 / 21.350) — typisch ist eine Bestellung für 2–3 Personen.
+--   (49.574 / 21.350).
 -- • Was folgt: Diese 5 Kennzahlen sind die Ausgangsbasis. Jede Änderung an
 --   Speisekarte, Schichtplan oder Aktion wird daran gemessen
 --   (z. B. steigt der Ø Bestellwert über 38,31 $?).
@@ -209,6 +209,7 @@ FROM orders
 GROUP BY hour
 ORDER BY hour;
 
+-- Note: hour '12' = 12:00-12:59. Time windows below are written from-to: 12-14 h = hours 12 and 13
 -- Result (hour | orders | avg_orders_per_day):
 -- 09 | 1 | 0.0     12 | 2520 | 7.0   15 | 1468 | 4.1   18 | 2399 | 6.7   21 | 1198 | 3.3
 -- 10 | 8 | 0.0     13 | 2455 | 6.9   16 | 1920 | 5.4   19 | 2009 | 5.6   22 |  663 | 1.9
@@ -219,13 +220,13 @@ ORDER BY hour;
 -- • Stärkster Tag: Freitag mit 70,8 Bestellungen pro Tag (avg_orders_per_day, 3.538 / 50).
 -- • Ruhigster Tag: Sonntag mit 50,5 pro Tag (2.624 / 52), 29 % weniger als Freitag (50,5 / 70,8 - 1).
 -- • Dienstag, Mittwoch und Montag liegen gleichauf bei 57-58 Bestellungen pro Tag.
--- • Zwei Stoßzeiten: Mittag 12-13 Uhr (2.520 und 2.455 Bestellungen, orders, 7,0 und 6,9 pro Tag) und Abend 17-18 Uhr (2.336 und 2.399).
--- • Ruhige Phase zwischen den Spitzen: 14-15 Uhr, 4,1 Bestellungen pro Tag.
--- • Fast leer: 9, 10 und 23 Uhr - 1, 8 und 28 Bestellungen im ganzen Jahr (orders).
+-- • Zwei Stoßzeiten: Mittag 12-14 Uhr (Stunden 12 und 13: 2.520 und 2.455 Bestellungen, orders, 7,0 und 6,9 pro Tag) und Abend 17-19 Uhr (Stunden 17 und 18: 2.336 und 2.399).
+-- • Ruhige Phase zwischen den Spitzen: 14-16 Uhr (Stunden 14 und 15), je 4,1 Bestellungen pro Stunde und Tag.
+-- • Fast leer: vor 11 Uhr und ab 23 Uhr (Stunden 9, 10 und 23) - 1, 8 und 28 Bestellungen im ganzen Jahr (orders).
 
 
 -- Tableau tile:
--- DE: «Stoßzeiten: Freitag, 12-13 und 17-18 Uhr - ruhig: Sonntag, 14-15 Uhr»
+-- DE: «Stoßzeiten: Freitag, 12-14 und 17-19 Uhr - ruhig: Sonntag, 14-16 Uhr»
 
 
 -- =========================================================
@@ -260,7 +261,7 @@ LIMIT 5;
 
 
 -- >>> FAZIT (was die Daten zeigen):
--- • Umsatzstärkste Sorte: Thai Chicken mit 43.434,25 $ (revenue); meistverkaufte: Classic Deluxe mit 2.453 Stück (qty_sold).
+-- • Umsatzstärkste Sorte: Thai Chicken mit 43.434,25 $ (revenue), meistverkaufte: Classic Deluxe mit 2.453 Stück (qty_sold).
 -- • Die Top-5-Listen stimmen zu 3 von 5 überein: Thai Chicken, Barbecue Chicken, Classic Deluxe.
 --   Nur nach Umsatz vorn: California Chicken und Spicy Italian, nur nach Menge: Hawaiian und Pepperoni -
 --   viel verkauft (2.422 und 2.418 Stück), aber weniger Umsatz (32.273,25 und 30.161,75 $).
@@ -431,11 +432,42 @@ LIMIT 7;
 -- • Zusammen 56.182,50 $ (cum_revenue), das sind 6,87 % des Umsatzes (cum_share_pct).
 -- • Brie Carre ist am schwächsten: 11.588,50 $ (1,42 %) und 490 Stück.
 -- • 6,87 % ist die Obergrenze des Verlusts: ein Teil der Gäste bestellt eine andere Sorte.
--- • Nächste Schritte: gemeinsame Zutaten dieser Sorten prüfen (verderbende Zutaten sind der Anlass der Anfrage).
+-- • Nächste Schritte: Zutaten dieser Sorten - siehe Q6c.
 
 
 -- Tableau tile:
 -- DE: «4 Sorten streichen: nur 6,9 % des Umsatzes betroffen»
+
+
+-- =========================================================
+-- Q6c: Ingredients of the removal candidates - how many pizza types use each one?
+--      (1 = the ingredient leaves the purchase list together with the pizza type)
+-- Why: the client's reason for the request - "ingredients spoil"
+-- Trick: wrap the list in ', ' ... ',' so that 'Prosciutto' does not match 'Prosciutto di San Daniele'
+-- LIKE returns 1 or 0 in SQLite - SUM counts the pizza types that contain the ingredient
+-- =========================================================
+
+SELECT
+  SUM(', ' || ingredients || ',' LIKE '%, Brie Carre Cheese,%')  AS brie_cheese,
+  SUM(', ' || ingredients || ',' LIKE '%, Prosciutto,%')         AS prosciutto,
+  SUM(', ' || ingredients || ',' LIKE '%, Caramelized Onions,%') AS caramelized_onions,
+  SUM(', ' || ingredients || ',' LIKE '%, Pears,%')              AS pears,
+  SUM(', ' || ingredients || ',' LIKE '%, Thyme,%')              AS thyme,
+  SUM(', ' || ingredients || ',' LIKE '%, Plum Tomatoes,%')      AS plum_tomatoes
+FROM pizza_types;
+
+-- Result (brie_cheese | prosciutto | caramelized_onions | pears | thyme | plum_tomatoes):
+-- 1 | 1 | 1 | 1 | 1 | 1
+
+
+-- >>> FAZIT (was die Daten zeigen):
+-- • 6 Zutaten kommen jeweils nur in einer Sorte vor (alle Spalten = 1).
+-- • 5 davon nur in Brie Carre (brie_cheese, prosciutto, caramelized_onions, pears, thyme), 1 in Mediterranean (plum_tomatoes).
+-- • Mit den 4 Streichkandidaten entfallen 6 Zutaten aus dem Einkauf.
+
+
+-- Tableau tile:
+-- DE: «4 Sorten streichen: max. 6,87 % Umsatz, 6 Zutaten weniger im Einkauf»
 
 
 -- =========================================================
@@ -480,6 +512,7 @@ GROUP BY order_size;
 -- • Sie bringen 322.570,90 $ (revenue) - 39,4 % des Umsatzes (revenue_share_pct).
 -- • Ø Bestellwert 83,14 $ gegenüber 28,35 $ bei normalen Bestellungen - 2,9-mal höher (83,14 / 28,35).
 -- • Jede 5. Bestellung bringt fast 2 von 5 Umsatz-Dollar.
+-- • Antwort: Ja, ein eigenes Angebot für Firmen und Gruppen lohnt sich zu prüfen - das Segment trägt 39,4 % des Umsatzes. Wer bestellt, zeigen die Daten nicht.
 -- • Nächste Schritte: Wann kommen große Bestellungen (Wochentag, Uhrzeit)? Passt das zur Mittagszeit an Werktagen (Hypothese «Firmen»)?
 
 
@@ -490,7 +523,7 @@ GROUP BY order_size;
 -- =========================================================
 -- Q8: Promotion - which weekdays and hours, and what is the potential
 -- Combines Q3 (weak hours) and Q5 (best-selling size L)
--- Window from Q3: 14-15 h = dip between lunch peak (7,0 orders/day) and dinner peak, 4,1 orders/day, every day
+-- Window from Q3: 14-16 h (hours 14 and 15) = dip between lunch peak (7,0 orders per hour and day) and dinner peak, 4,1 orders per hour and day
 -- =========================================================
 
 -- WHERE filters ROWS before grouping: only lines of orders placed at 14:00-15:59
@@ -524,7 +557,7 @@ FROM window_sales;
 
 
 -- >>> FAZIT (was die Daten zeigen):
--- • Zeitfenster 14-15 Uhr im Jahr: 112.193,70 $ (window_revenue), 2.940 Bestellungen (orders), 358 Tage (days).
+-- • Zeitfenster 14-16 Uhr im Jahr: 112.193,70 $ (window_revenue), 2.940 Bestellungen (orders), 358 Tage (days).
 -- • Das sind 13,7 % des Jahresumsatzes (revenue_share_pct), 313,39 $ pro Tag (revenue_per_day).
 -- • +10 % in diesem Fenster = 11.219,37 $ pro Jahr (plus_10pct), ca. 31 $ pro Tag (313,39 × 0,10).
 -- • Nächste Schritte: Wirkung per Test prüfen (A/B oder vorher/nachher, 4-6 Wochen) - der Rabatt L→M senkt die Marge, Nettoeffekt = Zuwachs minus Rabatt.
@@ -573,6 +606,7 @@ SELECT
   COUNT(DISTINCT order_id)  AS orders          -- 21350 = Q1
 FROM sales_lines;
 
-SELECT * FROM sales_lines;   -- run, then Export -> CSV -> exports/sales_lines.csv
-
 -- Result: 48620 | 817860.05 | 49574 | 21350 - all match
+
+-- Export for Tableau: run, then Export -> CSV -> exports/sales_lines.csv
+SELECT * FROM sales_lines;
