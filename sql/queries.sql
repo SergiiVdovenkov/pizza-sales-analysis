@@ -63,6 +63,43 @@ FROM order_details
 LIMIT 1;                                          -- integer
 -- price and quantity are already numeric - CAST in formulas is a safeguard (required by the task)
 
+-- 0.4 Duplicate IDs (primary key must be unique: rows - distinct ids = 0)
+SELECT COUNT(*) - COUNT(DISTINCT order_id)         AS duplicate_ids FROM orders;         -- 0
+SELECT COUNT(*) - COUNT(DISTINCT order_details_id) AS duplicate_ids FROM order_details;  -- 0
+SELECT COUNT(*) - COUNT(DISTINCT pizza_id)         AS duplicate_ids FROM pizzas;         -- 0
+SELECT COUNT(*) - COUNT(DISTINCT pizza_type_id)    AS duplicate_ids FROM pizza_types;    -- 0
+
+-- 0.5 Orphaned keys (LEFT JOIN keeps every row of the left table, NULL on the right = no match)
+SELECT COUNT(*) AS orders_without_lines
+FROM orders o
+LEFT JOIN order_details od USING (order_id)
+WHERE od.order_id IS NULL;                        -- 0
+
+SELECT COUNT(*) AS lines_without_order
+FROM order_details od
+LEFT JOIN orders o USING (order_id)
+WHERE o.order_id IS NULL;                         -- 0
+
+SELECT COUNT(*) AS lines_without_pizza
+FROM order_details od
+LEFT JOIN pizzas p USING (pizza_id)
+WHERE p.pizza_id IS NULL;                         -- 0
+
+SELECT COUNT(*) AS pizzas_without_type
+FROM pizzas p
+LEFT JOIN pizza_types pt USING (pizza_type_id)
+WHERE pt.pizza_type_id IS NULL;                   -- 0
+
+-- 0.6 Period covered and days with at least one order
+SELECT
+  MIN(date)            AS first_day,
+  MAX(date)            AS last_day,
+  COUNT(DISTINCT date) AS days_with_orders
+FROM orders;                                      -- 2015-01-01 | 2015-12-31 | 358
+-- 358 of 365 days have orders (7 days without sales) - 358 is the divisor for "per day" in Q3b and Q8
+
+-- Result of Step 0: complete year, no missing values, no duplicate IDs, no orphaned keys - no cleaning needed
+
 -- =========================================================
 -- Q1: Annual KPIs 2015
 -- Revenue, orders, pizzas sold, avg order value, avg pizzas per order
