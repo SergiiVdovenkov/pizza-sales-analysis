@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<!--
+  Pizzeria-Umsatz 2015 – Präsentation (Zwischenprojekt, Sergii Vdovenkov)
+  Öffnen: Doppelklick → Chrome. Vollbild: F11 (Mac: Ctrl+Cmd+F). Blättern: ← → / Leertaste.
+  PDF: Cmd+P → Querformat → „Hintergrundgrafiken“ an → Als PDF speichern (1 Folie pro Seite).
+  er-diagram.png muss im selben Ordner liegen. Das Dashboard braucht Internet.
+  SQL im HTML: <  >  & als &lt; &gt; &amp; schreiben.
+-->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pizzeria-Umsatz 2015 – Sergii Vdovenkov</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ===== NICHT ÄNDERN: Design ===== */
+:root{--navy:#1F3A5F;--accent:#D2452B;--ink:#111827;--mute:#6B7280;--line:#E5E7EB;--panel:#F4F6F9;--bar:#4F86C6;--code:#0F1B2D}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#1b1f27;font-family:Inter,Arial,sans-serif;color:var(--ink)}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#deck{width:1280px;height:720px;position:relative;transform-origin:center center;flex:none}
+.slide{position:absolute;inset:0;background:#fff;visibility:hidden;opacity:0;transition:opacity .25s;overflow:hidden;border-radius:6px}
+.slide.active{visibility:visible;opacity:1}
+.slide .in{position:absolute;inset:0 0 40px 0;padding:44px 64px 0}
+.slide footer{position:absolute;left:64px;right:64px;bottom:14px;display:flex;justify-content:space-between;font-size:12px;color:var(--mute);border-top:1px solid var(--line);padding-top:8px}
+.kicker{font-size:14px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--bar);margin-bottom:8px}
+h2{font-size:34px;line-height:1.15;font-weight:800;color:var(--navy);letter-spacing:-.01em;margin-bottom:22px;max-width:1120px}
+h3{font-size:20px;color:var(--navy);font-weight:700}
+.h3{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);font-weight:600;margin:4px 0 10px}
+code{font-family:"JetBrains Mono",monospace;font-size:.88em;background:var(--panel);padding:1px 5px;border-radius:4px}
+.lead{font-size:19px;color:#374151;max-width:1000px;line-height:1.45;margin-bottom:30px}
+.acc{color:var(--accent)}
+.big{font-size:64px;font-weight:800;line-height:1;letter-spacing:-.02em}
+.big2{display:block;font-size:34px;font-weight:800;color:var(--navy);line-height:1.1}
+.cols>.col{min-width:0}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.qcols{grid-template-columns:430px 1fr}
+.slide.q pre.sql.fit{max-height:430px}
+.cols pre.sql.fit{max-height:480px}
+.hero{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.herol{font-size:15px;color:var(--mute)}
+.facts{list-style:none;display:flex;flex-direction:column;gap:9px}
+.facts li{font-size:16.5px;line-height:1.4;padding-left:16px;position:relative}
+.facts li:before{content:"";position:absolute;left:0;top:9px;width:6px;height:6px;border-radius:50%;background:var(--navy)}
+.checks{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:24px}
+.checks li{font-size:16px;padding-left:24px;position:relative}
+.checks li:before{content:"✓";position:absolute;left:0;color:var(--bar);font-weight:800}
+.kpis2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.kpis2 span:not(.big2){font-size:14px;color:var(--mute)}
+pre.sql code{background:none;padding:0;color:inherit;font-size:inherit}
+pre.sql{background:var(--code);color:#E6EDF6;border-radius:10px;padding:16px 18px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:12px;line-height:1.45;white-space:pre;overflow:hidden}
+.small{font-size:13px;color:var(--mute);margin-top:8px}
+.small a{color:var(--bar)}
+.laura{position:absolute;left:64px;right:64px;bottom:52px;background:var(--panel);border-left:5px solid var(--navy);padding:11px 16px;font-size:16px;font-weight:600;color:var(--navy);border-radius:0 8px 8px 0}
+.slide.q .in{padding-bottom:70px}
+.ctitle{font-size:13px;color:var(--mute);margin:14px 0 6px}
+.chart{width:100%;max-width:400px;height:auto;max-height:230px}
+.chart .ax{font-size:13px;fill:var(--mute);text-anchor:middle;font-family:Inter}
+.chart .vl{font-size:14px;fill:var(--accent);text-anchor:middle;font-weight:700;font-family:Inter}
+.chart .base{stroke:#9CA3AF}
+.bars{display:flex;flex-direction:column;gap:2px;margin-top:6px}
+.br{display:grid;grid-template-columns:130px 1fr 64px;align-items:center;gap:8px;font-size:12px;line-height:15px}
+.bn{color:#374151;white-space:nowrap}
+.bt{height:10px;background:transparent}
+.bf{display:block;height:10px;border-radius:2px;background:var(--bar)}
+.bf.acc{background:#E8833A}
+.bv{text-align:right;font-variant-numeric:tabular-nums;color:#374151}
+.cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.card{background:var(--panel);border-radius:12px;padding:28px;min-height:260px;position:relative}
+.ins .card{min-height:400px;padding:34px 30px}
+.card h3{margin:8px 0 8px}
+.card p{font-size:17px;line-height:1.45;color:#374151}
+.cn{width:38px;height:38px;border-radius:50%;background:var(--navy);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:18px}
+.cq{position:absolute;bottom:18px;left:24px;font-size:13px;color:var(--bar);font-weight:600}
+.bigc{font-size:54px;font-weight:800;margin-bottom:14px}
+.ins .card h3{font-size:23px}.ins .card p{font-size:19px}
+.foot-note{margin-top:26px;font-size:14px;color:var(--mute)}
+.er{display:block;width:100%;max-height:560px;object-fit:contain;margin-top:-14px}
+.recs{display:flex;flex-direction:column;gap:18px}
+.rec{display:grid;grid-template-columns:52px 1fr;gap:18px;background:var(--panel);border-radius:12px;padding:20px 24px}
+.rec h3{font-size:22px}
+.rn{width:44px;height:44px;border-radius:50%;background:var(--navy);color:#fff;font-weight:800;font-size:20px;display:flex;align-items:center;justify-content:center}
+.rec p{font-size:18px;line-height:1.45;margin-top:5px}
+.rec .eff{font-size:15.5px;color:var(--mute)}
+.title .in{padding:90px 90px 0;border-left:10px solid var(--navy)}
+.t-kicker{font-size:15px;font-weight:600;color:var(--bar);letter-spacing:.06em;text-transform:uppercase}
+.t-h1{font-size:54px;line-height:1.08;font-weight:800;color:var(--navy);margin:16px 0 18px;letter-spacing:-.02em}
+.t-sub{font-size:20px;color:#374151;max-width:900px}
+.t-hero{margin-top:64px;display:flex;align-items:baseline;gap:22px}
+.t-herol{font-size:18px;color:var(--mute)}
+.t-meta{position:absolute;left:90px;bottom:40px;font-size:15px;color:#374151}
+.links{margin-top:40px;display:flex;flex-direction:column;gap:14px;font-size:20px}
+.links span{display:inline-block;width:150px;color:var(--mute);font-size:15px;text-transform:uppercase;letter-spacing:.06em}
+.links a{color:var(--navy);font-weight:600;text-decoration:none}
+.dashwrap{position:absolute;left:64px;top:120px;width:760px;height:560px;overflow:hidden;border:1px solid var(--line);border-radius:8px;background:#fff}
+.tviz{border:0;transform-origin:0 0;position:absolute;left:0;top:0;background:#fff}
+.dashprint{display:none;width:100%;height:100%;object-fit:contain}
+.open{display:inline-block;margin-top:14px;background:var(--navy);color:#fff;text-decoration:none;font-weight:600;font-size:15px;padding:10px 16px;border-radius:8px}
+
+.steps.big{font-size:18px;gap:14px}
+.dashside{position:absolute;top:120px;right:64px}
+.steps{padding-left:20px;display:flex;flex-direction:column;gap:10px;font-size:15px;line-height:1.4;margin-bottom:12px}
+.lim .facts{gap:18px}.lim .facts li{font-size:20px}.lim .h3{font-size:17px;margin-bottom:18px}
+pre.sql.fit{cursor:zoom-in}
+.sqlzoom{position:absolute;inset:24px 40px 50px;z-index:5;font-size:15px!important;max-height:none!important;overflow:auto!important;cursor:zoom-out;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+/* Navigation */
+#nav{position:fixed;right:18px;bottom:14px;display:flex;gap:8px;align-items:center;z-index:10;opacity:.15;transition:opacity .2s}
+#nav:hover{opacity:1}
+#nav button{background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:6px;padding:8px 14px;font:600 14px Inter;cursor:pointer}
+#nav button:hover{background:rgba(255,255,255,.25)}
+#count{color:#cbd5e1;font:500 13px Inter;min-width:52px;text-align:center}
+#bar{position:fixed;left:0;top:0;height:3px;background:var(--accent);transition:width .25s;z-index:10}
+@media print{
+  @page{size:1280px 720px;margin:0}
+  html,body{background:#fff}
+  #nav,#bar,.sqlzoom{display:none}
+  #stage{position:static;display:block}
+  #deck{transform:none!important;width:1280px;height:auto}
+  .slide{position:relative;visibility:visible;opacity:1;width:1280px;height:720px;page-break-after:always;break-after:page;border-radius:0}
+  .tviz{display:none}.dashprint{display:block}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<div id="stage"><div id="deck">
+
+<!-- ===== Folie 1 ===== -->
+<section class="slide title" data-n="1"><div class="in">
+<div class="t-kicker">Zwischenprojekt · Data Analytics &amp; Engineering · Deutsche Tech Akademie</div>
+<h1 class="t-h1">Pizzeria-Umsatz 2015:<br>Schichtplan, Speisekarte, Aktion</h1>
+<p class="t-sub">Analyse der Kassendaten für Laura Martinez – drei Entscheidungen für Januar, belegt mit Zahlen</p>
+<div class="t-hero"><span class="big acc">817.860 $</span><span class="t-herol">Umsatz 2015 · 21.350 Bestellungen · 49.574 Pizzen</span></div>
+<div class="t-meta"><b>Sergii Vdovenkov</b> · Präsentation 05.10.2026 · SQLite · Tableau Public · GitHub</div></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>1 / 19</span></footer></section>
+<!-- ===== Folie 2 ===== -->
+<section class="slide " data-n="2"><div class="in">
+<div class="kicker">Ausgangslage</div>
+<h2>Laura muss im Januar drei Entscheidungen treffen</h2>
+<p class="lead">Neue Inhaberin einer Pizzeria in New Jersey, Kassenexport für das ganze Jahr 2015 – „Am wichtigsten sind mir konkrete Empfehlungen mit Zahlen.“</p>
+<div class="cards3">
+ <div class="card"><div class="cn">1</div><h3>Schichtplan</h3><p>Wann ist Stoßzeit, wann ist es ruhig?</p><div class="cq">Fragen 1–3</div></div>
+ <div class="card"><div class="cn">2</div><h3>Speisekarte</h3><p>Welche Pizzen können gestrichen werden? Zutaten verderben.</p><div class="cq">Fragen 4–6</div></div>
+ <div class="card"><div class="cn">3</div><h3>Aktion</h3><p>Wann und womit schwache Stunden stärken?</p><div class="cq">Fragen 5, 7, 8</div></div>
+</div>
+<p class="foot-note">8 Kernfragen: Kennzahlen · Monate · Wochentage &amp; Uhrzeiten · Bestseller &amp; Ladenhüter · Kategorien &amp; Größen · Streichkandidaten · große Bestellungen · Aktion</p></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>2 / 19</span></footer></section>
+<!-- ===== Folie 3 ===== -->
+<section class="slide " data-n="3"><div class="in">
+<div class="kicker">Daten</div>
+<h2>4 Tabellen, 1 Jahr, 48.620 Bestellpositionen</h2>
+<!-- ER-Diagramm: Datei er-diagram.png liegt im selben Ordner wie index.html -->
+<img class="er" src="er-diagram.png" alt="ER-Diagramm: orders, order_details, pizzas, pizza_types"></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>3 / 19</span></footer></section>
+<!-- ===== Folie 4 ===== -->
+<section class="slide " data-n="4"><div class="in">
+<div class="kicker">Datenprüfung &amp; Auswahl für Tableau</div>
+<h2>Daten sind sauber – eine Tabelle <code>sales_lines</code> für das Dashboard</h2>
+<div class="cols">
+ <div class="col">
+  <h3 class="h3">Prüfung in SQLite Online</h3>
+  <ul class="checks">
+   <li>Zeilen gezählt: 21.350 · 48.620 · 96 · 32</li>
+   <li>0 fehlende Werte, 0 verwaiste Schlüssel, 0 doppelte IDs</li>
+   <li>Zeitraum genau 01.01.–31.12.2015</li>
+   <li>Typen mit <code>typeof()</code>: price = real, quantity = integer → <code>CAST</code> als Absicherung</li>
+  </ul>
+  <h3 class="h3">Kontrolle der Auswahl</h3>
+  <div class="kpis2">
+   <div><span class="big2 acc">48.620</span><span>Zeilen = order_details<br>kein JOIN-Duplikat</span></div>
+   <div><span class="big2">817.860,05 $</span><span>Umsatz = Frage 1</span></div>
+  </div>
+ </div>
+ <div class="col">
+  <h3 class="h3">VIEW über alle 4 Tabellen (★ Bonus) → Export CSV</h3>
+  <pre class="sql fit"><code>-- VIEW (★ Bonus)
+CREATE VIEW sales_lines AS
+SELECT
+  o.order_id AS order_id,
+  o.date AS order_date,
+  o.time AS order_time,
+  strftime(&#x27;%m&#x27;, o.date) AS month,
+  CASE strftime(&#x27;%w&#x27;, o.date)
+    WHEN &#x27;1&#x27; THEN &#x27;Monday&#x27; WHEN &#x27;2&#x27; THEN &#x27;Tuesday&#x27;
+    WHEN &#x27;3&#x27; THEN &#x27;Wednesday&#x27; WHEN &#x27;4&#x27; THEN &#x27;Thursday&#x27;
+    WHEN &#x27;5&#x27; THEN &#x27;Friday&#x27; WHEN &#x27;6&#x27; THEN &#x27;Saturday&#x27;
+    WHEN &#x27;0&#x27; THEN &#x27;Sunday&#x27;
+  END AS weekday,
+  strftime(&#x27;%H&#x27;, o.time) AS hour,
+  pt.name AS pizza_name,
+  pt.category AS category,
+  p.size AS size,
+  CAST(p.price AS REAL) AS unit_price,
+  CAST(od.quantity AS INTEGER) AS quantity,
+  CAST(p.price AS REAL) * CAST(od.quantity AS INTEGER) AS revenue
+FROM orders o
+JOIN order_details od USING (order_id)
+JOIN pizzas p USING (pizza_id)
+JOIN pizza_types pt USING (pizza_type_id);
+
+-- Kontrolle
+SELECT
+  COUNT(*) AS row_count,
+  ROUND(SUM(revenue), 2) AS total_revenue,
+  SUM(quantity) AS pizzas_sold,
+  COUNT(DISTINCT order_id)  AS orders
+FROM sales_lines;</code></pre>
+  <p class="small">1 Zeile = 1 Bestellposition, 12 Felder</p>
+ </div>
+</div></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>4 / 19</span></footer></section>
+<!-- ===== Folie 5 ===== -->
+<section class="slide q" data-n="5"><div class="in">
+<div class="kicker">Frage 1 · Kennzahlen des Jahres</div>
+<h2>818 Tsd. $ Umsatz aus 21.350 Bestellungen</h2>
+<div class="cols qcols">
+ <div class="col">
+  <div class="hero"><span class="big acc">38,31 $</span><span class="herol">Ø Bestellwert (817.860 / 21.350)</span></div>
+  <ul class="facts"><li><b>49.574</b> verkaufte Pizzen (Menge, nicht Zeilen)</li><li>Ø <b>2,32</b> Pizzen pro Bestellung (49.574 / 21.350)</li><li>Ø Bestellwert = Umsatz ÷ Bestellungen, nicht AVG über Positionen</li></ul>
+  
+ </div>
+ <div class="col"><pre class="sql fit"><code>WITH base AS (
+  SELECT
+    SUM(CAST(p.price AS REAL) * CAST(od.quantity AS INTEGER)) AS total_revenue,
+    COUNT(DISTINCT od.order_id) AS total_orders,
+    SUM(CAST(od.quantity AS INTEGER)) AS pizzas_sold
+  FROM order_details od
+  JOIN pizzas p USING (pizza_id)
+)
+SELECT
+  ROUND(total_revenue, 2) AS total_revenue,
+  total_orders,
+  pizzas_sold,
+  ROUND(total_revenue / total_orders, 2) AS avg_order_value,
+  ROUND(CAST(pizzas_sold AS REAL) / total_orders, 2) AS avg_pizzas_per_order
+FROM base;</code></pre></div>
+</div>
+<div class="laura">→ Für Laura: Ausgangsbasis – jede Maßnahme wird an diesen fünf Zahlen gemessen.</div></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>5 / 19</span></footer></section>
+<!-- ===== Folie 6 ===== -->
+<section class="slide q" data-n="6"><div class="in">
+<div class="kicker">Frage 2 · Entwicklung nach Monaten</div>
+<h2>Kein Saisoneffekt: Monatsumsatz schwankt nur um 13 %</h2>
+<div class="cols qcols">
+ <div class="col">
+  <div class="hero"><span class="big acc">72.558 $</span><span class="herol">stärkster Monat Juli · schwächster Oktober 64.028 $</span></div>
+  <ul class="facts"><li>Abstand 8.530 $ = 13,3 % vom Oktober (8.530 / 64.028)</li><li>★ LAG: größter Anstieg November +9,9 %, Rückgang Dezember −8,1 %</li></ul>
+  <div class="ctitle">Umsatz 2015 nach Monat, in Tsd. $</div><svg viewBox="0 -26 560 366" class="chart" role="img" aria-label="Umsatz nach Monat 2015"><rect x="6.3" y="20.8" width="34" height="279.2" rx="3" fill="var(--bar)"/><text x="23.3" y="324" class="ax">Jan</text><rect x="53.0" y="39.4" width="34" height="260.6" rx="3" fill="var(--bar)"/><text x="70.0" y="324" class="ax">Feb</text><rect x="99.7" y="18.4" width="34" height="281.6" rx="3" fill="var(--bar)"/><text x="116.7" y="324" class="ax">Mär</text><rect x="146.3" y="25.1" width="34" height="274.9" rx="3" fill="var(--bar)"/><text x="163.3" y="324" class="ax">Apr</text><rect x="193.0" y="14.4" width="34" height="285.6" rx="3" fill="var(--bar)"/><text x="210.0" y="324" class="ax">Mai</text><rect x="239.7" y="27.1" width="34" height="272.9" rx="3" fill="var(--bar)"/><text x="256.7" y="324" class="ax">Jun</text><rect x="286.3" y="9.8" width="34" height="290.2" rx="3" fill="var(--accent)"/><text x="303.3" y="324" class="ax">Jul</text><text x="303.3" y="1.8" class="vl">72,6</text><rect x="333.0" y="26.9" width="34" height="273.1" rx="3" fill="var(--bar)"/><text x="350.0" y="324" class="ax">Aug</text><rect x="379.7" y="43.3" width="34" height="256.7" rx="3" fill="var(--bar)"/><text x="396.7" y="324" class="ax">Sep</text><rect x="426.3" y="43.9" width="34" height="256.1" rx="3" fill="var(--accent)"/><text x="443.3" y="324" class="ax">Okt</text><text x="443.3" y="35.9" class="vl">64,0</text><rect x="473.0" y="18.4" width="34" height="281.6" rx="3" fill="var(--bar)"/><text x="490.0" y="324" class="ax">Nov</text><rect x="519.7" y="41.2" width="34" height="258.8" rx="3" fill="var(--bar)"/><text x="536.7" y="324" class="ax">Dez</text><line x1="0" x2="560" y1="300" y2="300" class="base"/></svg>
+ </div>
+ <div class="col"><pre class="sql fit"><code>WITH monthly AS (
+  SELECT
+    strftime(&#x27;%m&#x27;, o.date) AS month,
+    ROUND(SUM(CAST(p.price AS REAL) * CAST(od.quantity AS INTEGER)), 2) AS revenue,
+    COUNT(DISTINCT o.order_id) AS orders
+  FROM orders o
+  JOIN order_details od USING (order_id)
+  JOIN pizzas p USING (pizza_id)
+  GROUP BY month
+)
+SELECT
+  month,
+  revenue,
+  orders,
+  ROUND((revenue - LAG(revenue) OVER (ORDER BY month))
+        / LAG(revenue) OVER (ORDER BY month) * 100, 1) AS pct_vs_prev_month
+FROM monthly
+ORDER BY month;</code></pre></div>
+</div>
+<div class="laura">→ Für Laura: Personal nach Wochentag und Uhrzeit planen, nicht nach Monat.</div></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>6 / 19</span></footer></section>
+<!-- ===== Folie 7 ===== -->
+<section class="slide q" data-n="7"><div class="in">
+<div class="kicker">Frage 3 · Auslastung nach Wochentagen und Uhrzeiten</div>
+<h2>Freitag ist der stärkste Tag, 14–16 Uhr die Flaute</h2>
+<div class="cols qcols">
+ <div class="col">
+  <div class="hero"><span class="big acc">70,8</span><span class="herol">Bestellungen pro Freitag (3.538 / 50)</span></div>
+  <ul class="facts"><li>Sonntag am ruhigsten: 50,5 pro Tag (2.624 / 52)</li><li>Spitzen 12–14 Uhr (Stunden 12 und 13: 2.520 und 2.455 Bestellungen) und 17–19 Uhr (2.336 und 2.399)</li><li>Vor 11 Uhr und ab 23 Uhr: nur 1, 8 und 28 Bestellungen im ganzen Jahr</li><li>Falle: 48 Montage, 50 Freitage, sonst 52 → Durchschnitt pro Tag statt Summe</li></ul>
+  
+ </div>
+ <div class="col"><pre class="sql fit"><code>-- Q3a: Wochentage
+SELECT
+  CASE strftime(&#x27;%w&#x27;, date)
+    WHEN &#x27;1&#x27; THEN &#x27;Monday&#x27;
+    WHEN &#x27;2&#x27; THEN &#x27;Tuesday&#x27;
+    WHEN &#x27;3&#x27; THEN &#x27;Wednesday&#x27;
+    WHEN &#x27;4&#x27; THEN &#x27;Thursday&#x27;
+    WHEN &#x27;5&#x27; THEN &#x27;Friday&#x27;
+    WHEN &#x27;6&#x27; THEN &#x27;Saturday&#x27;
+    WHEN &#x27;0&#x27; THEN &#x27;Sunday&#x27;
+  END AS weekday,
+  COUNT(*) AS orders,
+  COUNT(DISTINCT date) AS days,
+  ROUND(CAST(COUNT(*) AS REAL) / COUNT(DISTINCT date), 1)  AS avg_orders_per_day
+FROM orders
+GROUP BY weekday
+ORDER BY avg_orders_per_day DESC;
+
+-- Q3b: Stunden
+SELECT
+  strftime(&#x27;%H&#x27;, time) AS hour,
+  COUNT(*) AS orders,
+  ROUND(CAST(COUNT(*) AS REAL) / (SELECT COUNT(DISTINCT date) FROM orders), 1) AS avg_orders_per_day
+FROM orders
+GROUP BY hour
+ORDER BY hour;</code></pre></div>
+</div>
+<div class="laura">→ Für Laura: Schichten auf Mittag und Abend ausrichten, freitags verstärken; 14–16 Uhr ist das Fenster für die Aktion.</div></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>7 / 19</span></footer></section>
+<!-- ===== Folie 8 ===== -->
+<section class="slide q" data-n="8"><div class="in">
+<div class="kicker">Frage 4 · Bestseller und Ladenhüter</div>
+<h2>Thai Chicken bringt fast 4-mal so viel Umsatz wie Brie Carre</h2>
+<div class="cols qcols">
+ <div class="col">
+  <div class="hero"><span class="big acc">43.434 $</span><span class="herol">Thai Chicken · Brie Carre 11.589 $ (43.434 / 11.589 = 3,7)</span></div>
+  <ul class="facts"><li>Umsatz- und Mengenlisten stimmen zu 3 von 5 überein; Menge-Spitze: Classic Deluxe 2.453 Stück</li><li>Brie Carre ist in beiden Listen Letzter: 490 Stück</li></ul>
+  <div class="ctitle">Umsatz 2015, in $ · Top 5 blau, Flop 5 orange</div><div class="bars"><div class="br"><span class="bn">Thai Chicken</span><span class="bt"><span class="bf" style="width:100.0%"></span></span><span class="bv">43.434</span></div><div class="br"><span class="bn">Barbecue Chicken</span><span class="bt"><span class="bf" style="width:98.5%"></span></span><span class="bv">42.768</span></div><div class="br"><span class="bn">California Chicken</span><span class="bt"><span class="bf" style="width:95.3%"></span></span><span class="bv">41.410</span></div><div class="br"><span class="bn">Classic Deluxe</span><span class="bt"><span class="bf" style="width:87.9%"></span></span><span class="bv">38.180</span></div><div class="br"><span class="bn">Spicy Italian</span><span class="bt"><span class="bf" style="width:80.2%"></span></span><span class="bv">34.831</span></div><div class="br"><span class="bn">Spinach Pesto</span><span class="bt"><span class="bf acc" style="width:35.9%"></span></span><span class="bv">15.596</span></div><div class="br"><span class="bn">Mediterranean</span><span class="bt"><span class="bf acc" style="width:35.4%"></span></span><span class="bv">15.360</span></div><div class="br"><span class="bn">Spinach Supreme</span><span class="bt"><span class="bf acc" style="width:35.2%"></span></span><span class="bv">15.278</span></div><div class="br"><span class="bn">Green Garden</span><span class="bt"><span class="bf acc" style="width:32.1%"></span></span><span class="bv">13.956</span></div><div class="br"><span class="bn">Brie Carre</span><span class="bt"><span class="bf acc" style="width:26.7%"></span></span><span class="bv">11.588</span></div></div>
+ </div>
+ <div class="col"><pre class="sql fit"><code>-- Top 5 Umsatz · Flop 5: ORDER BY revenue ASC · Menge: ORDER BY qty_sold
+SELECT
+  pt.name AS pizza_name,
+  ROUND(SUM(CAST(p.price AS REAL) * CAST(od.quantity AS INTEGER)), 2)  AS revenue,
+  SUM(CAST(od.quantity AS INTEGER)) AS qty_sold
+FROM order_details od
+JOIN pizzas p USING (pizza_id)
+JOIN pizza_types pt USING (pizza_type_id)
+GROUP BY pt.name
+ORDER BY revenue DESC
+LIMIT 5;</code></pre></div>
+</div>
+<div class="laura">→ Für Laura: Die Flop-Sorten sind Kandidaten für die Streichung (Frage 6).</div></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>8 / 19</span></footer></section>
+<!-- ===== Folie 9 ===== -->
+<section class="slide q" data-n="9"><div class="in">
+<div class="kicker">Frage 5 · Kategorien und Größen</div>
+<h2>Größe L bringt fast die Hälfte des Umsatzes: 45,9 %</h2>
+<div class="cols qcols">
+ <div class="col">
+  <div class="hero"><span class="big acc">45,9 %</span><span class="herol">Umsatzanteil Größe L (375.319 $, 18.956 Stück)</span></div>
+  <ul class="facts"><li>L + M = 76,4 %; XL + XXL zusammen nur 1,8 % (580 Stück)</li><li>Kategorien fast gleich: Classic 26,9 · Supreme 25,5 · Chicken 24,0 · Veggie 23,7 %</li><li>Abstand stärkste – schwächste Kategorie: 3,2 Prozentpunkte</li></ul>
+  <div class="bars"><div class="br"><span class="bn">L</span><span class="bt"><span class="bf" style="width:100.0%"></span></span><span class="bv">45,9 %</span></div><div class="br"><span class="bn">M</span><span class="bt"><span class="bf" style="width:66.4%"></span></span><span class="bv">30,5 %</span></div><div class="br"><span class="bn">S</span><span class="bt"><span class="bf" style="width:47.5%"></span></span><span class="bv">21,8 %</span></div><div class="br"><span class="bn">XL</span><span class="bt"><span class="bf" style="width:3.7%"></span></span><span class="bv">1,7 %</span></div><div class="br"><span class="bn">XXL</span><span class="bt"><span class="bf" style="width:0.2%"></span></span><span class="bv">0,1 %</span></div></div>
+ </div>
+ <div class="col"><pre class="sql fit"><code>-- Q5a: Kategorien – Anteil per Unterabfrage
+SELECT
+  pt.category AS category,
+  ROUND(SUM(CAST(p.price AS REAL) * CAST(od.quantity AS INTEGER)), 2)  AS revenue,
+  ROUND(
+    SUM(CAST(p.price AS REAL) * CAST(od.quantity AS INTEGER)) * 100.0
+    / (SELECT SUM(CAST(p2.price AS REAL) * CAST(od2.quantity AS INTEGER))
+       FROM order_details od2
+       JOIN pizzas p2 USING (pizza_id))
+  , 1) AS revenue_share_pct
+FROM order_details od
+JOIN pizzas p USING (pizza_id)
+JOIN pizza_types pt USING (pizza_type_id)
+GROUP BY pt.category
+ORDER BY revenue DESC;
+
+-- Q5b ★: Größen – Anteil mit SUM() OVER ()
+WITH by_size AS (
+  SELECT
+    p.size AS size,
+    SUM(CAST(p.price AS REAL) * CAST(od.quantity AS INTEGER)) AS revenue,
+    SUM(CAST(od.quantity AS INTEGER)) AS qty_sold
+  FROM order_details od
+  JOIN pizzas p USING (pizza_id)
+  GROUP BY p.size
+)
+SELECT
+  size,
+  ROUND(revenue, 2) AS revenue,
+  qty_sold,
+  ROUND(revenue * 100.0 / SUM(revenue) OVER (), 1) AS revenue_share_pct
+FROM by_size
+ORDER BY revenue DESC;</code></pre></div>
+</div>
+<div class="laura">→ Für Laura: Über die Karte nach Sorte entscheiden, nicht nach Kategorie; die Aktion auf Größe L ausrichten.</div></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>9 / 19</span></footer></section>
+<!-- ===== Folie 10 ===== -->
+<section class="slide q" data-n="10"><div class="in">
+<div class="kicker">Frage 6 · Teil 1 · Kandidaten für die Streichung</div>
+<h2>4 von 32 Sorten: unter 1,9 % Umsatz und unter 1.000 Stück</h2>
+<div class="cols qcols">
+ <div class="col">
+  <div class="hero"><span class="big acc">4 Sorten</span><span class="herol">zum Streichen · 3 weitere beobachten</span></div>
+  <ul class="facts"><li>Brie Carre 1,42 % (490 Stück) · Green Garden 1,71 % · Spinach Supreme 1,87 % · Mediterranean 1,88 %</li><li>HAVING: nur Sorten mit Anteil &lt; 2 % (7 Sorten)</li><li>CASE: &lt; 1,9 % <b>und</b> &lt; 1.000 Stück → 'remove', sonst 'watch'</li><li>Beobachten: Spinach Pesto, Calabrese, Italian Vegetables (1,91–1,96 %)</li></ul>
+  
+ </div>
+ <div class="col"><pre class="sql fit"><code>-- Q6a: Kurzliste (HAVING) und Entscheidung (CASE)
+WITH by_type AS (
+  SELECT
+    pt.name AS pizza_name,
+    ROUND(SUM(CAST(p.price AS REAL) * CAST(od.quantity AS INTEGER)), 2) AS revenue,
+    SUM(CAST(od.quantity AS INTEGER)) AS qty_sold,
+    ROUND(SUM(CAST(p.price AS REAL) * CAST(od.quantity AS INTEGER)) * 100.0
+          / (SELECT SUM(CAST(p2.price AS REAL) * CAST(od2.quantity AS INTEGER))
+           FROM order_details od2
+           JOIN pizzas p2 USING (pizza_id)), 2) AS revenue_share_pct
+  FROM order_details od
+  JOIN pizzas p USING (pizza_id)
+  JOIN pizza_types pt USING (pizza_type_id)
+  GROUP BY pt.name
+  HAVING revenue_share_pct &lt; 2.0
+)
+SELECT
+  pizza_name, revenue, qty_sold, revenue_share_pct,
+  CASE
+    WHEN revenue_share_pct &lt; 1.9 AND qty_sold &lt; 1000 THEN &#x27;remove&#x27;
+    ELSE &#x27;watch&#x27;
+  END AS decision
+FROM by_type
+ORDER BY revenue;</code></pre></div>
+</div>
+<div class="laura">→ Für Laura: Diese 4 Sorten sind die Streichkandidaten – Grenzen bewusst gewählt für „3–5 Positionen“.</div></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>10 / 19</span></footer></section>
+<!-- ===== Folie 11 ===== -->
+<section class="slide q" data-n="11"><div class="in">
+<div class="kicker">Frage 6 · Teil 2 · Kandidaten für die Streichung</div>
+<h2>Streichen kostet höchstens 6,87 % Umsatz und spart 6 Zutaten</h2>
+<div class="cols qcols">
+ <div class="col">
+  <div class="hero"><span class="big acc">6,87 %</span><span class="herol">Umsatz der 4 Sorten: 56.183 $ (★ cum_share_pct)</span></div>
+  <ul class="facts"><li>★ Kumuliert: Brie Carre 1,42 → + Green Garden 3,12 → + Spinach Supreme 4,99 → + Mediterranean 6,87 %</li><li>Zutaten: alle 6 Spalten = 1 → jede Zutat nur in einer Sorte (5 aus Brie Carre, 1 aus Mediterranean)</li><li>Falle: ohne Kommas findet 'Prosciutto' auch „Prosciutto di San Daniele“</li></ul>
+  
+ </div>
+ <div class="col"><pre class="sql fit"><code>-- Q6b ★: kumulierter Umsatzanteil
+WITH by_type AS (
+  SELECT
+    pt.name AS pizza_name,
+    SUM(CAST(p.price AS REAL) * CAST(od.quantity AS INTEGER)) AS revenue,
+    SUM(CAST(od.quantity AS INTEGER)) AS qty_sold
+  FROM order_details od
+  JOIN pizzas p USING (pizza_id)
+  JOIN pizza_types pt USING (pizza_type_id)
+  GROUP BY pt.name
+)
+SELECT
+  pizza_name,
+  ROUND(revenue, 2) AS revenue,
+  qty_sold,
+  ROUND(revenue * 100.0 / SUM(revenue) OVER (), 2) AS revenue_share_pct,
+  ROUND(SUM(revenue) OVER (ORDER BY revenue), 2) AS cum_revenue,
+  ROUND(SUM(revenue) OVER (ORDER BY revenue) * 100.0 / SUM(revenue) OVER (), 2) AS cum_share_pct
+FROM by_type
+ORDER BY revenue
+LIMIT 7;
+
+-- Q6c: Zutaten, die nur in einer Sorte vorkommen
+SELECT
+  SUM(&#x27;, &#x27; || ingredients || &#x27;,&#x27; LIKE &#x27;%, Brie Carre Cheese,%&#x27;)  AS brie_cheese,
+  SUM(&#x27;, &#x27; || ingredients || &#x27;,&#x27; LIKE &#x27;%, Prosciutto,%&#x27;) AS prosciutto,
+  SUM(&#x27;, &#x27; || ingredients || &#x27;,&#x27; LIKE &#x27;%, Caramelized Onions,%&#x27;) AS caramelized_onions,
+  SUM(&#x27;, &#x27; || ingredients || &#x27;,&#x27; LIKE &#x27;%, Pears,%&#x27;) AS pears,
+  SUM(&#x27;, &#x27; || ingredients || &#x27;,&#x27; LIKE &#x27;%, Thyme,%&#x27;) AS thyme,
+  SUM(&#x27;, &#x27; || ingredients || &#x27;,&#x27; LIKE &#x27;%, Plum Tomatoes,%&#x27;) AS plum_tomatoes
+FROM pizza_types;</code></pre></div>
+</div>
+<div class="laura">→ Für Laura: 4 Sorten streichen: weniger Zutaten verderben, höchstens 6,87 % Umsatz betroffen.</div></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>11 / 19</span></footer></section>
+<!-- ===== Folie 12 ===== -->
+<section class="slide q" data-n="12"><div class="in">
+<div class="kicker">Frage 7 · Große Bestellungen</div>
+<h2>4+ Pizzen: 18,2 % der Bestellungen, 39,4 % des Umsatzes</h2>
+<div class="cols qcols">
+ <div class="col">
+  <div class="hero"><span class="big acc">83,14 $</span><span class="herol">Ø Bestellwert groß · normal 28,35 $ (2,9-mal so hoch)</span></div>
+  <ul class="facts"><li>3.880 große Bestellungen bringen 322.571 $</li><li>Ebene gewechselt: erst pro Bestellung summieren (CTE), dann einteilen (CASE)</li><li><b>Ja, ein Firmenangebot lohnt sich zu prüfen</b> – wer bestellt, zeigen die Daten nicht</li></ul>
+  
+ </div>
+ <div class="col"><pre class="sql fit"><code>WITH order_level AS (
+  SELECT
+    od.order_id,
+    SUM(CAST(od.quantity AS INTEGER)) AS pizzas_in_order,
+    SUM(CAST(p.price AS REAL) * CAST(od.quantity AS INTEGER)) AS order_revenue
+  FROM order_details od
+  JOIN pizzas p USING (pizza_id)
+  GROUP BY od.order_id
+)
+SELECT
+  CASE
+    WHEN pizzas_in_order &gt;= 4 THEN &#x27;large (4+)&#x27;
+    ELSE &#x27;regular (1-3)&#x27;
+  END AS order_size,
+  COUNT(*) AS orders,
+  ROUND(COUNT(*) * 100.0
+        / (SELECT COUNT(*) FROM order_level), 1) AS orders_share_pct,
+  ROUND(SUM(order_revenue), 2) AS revenue,
+  ROUND(SUM(order_revenue) * 100.0
+        / (SELECT SUM(order_revenue) FROM order_level), 1)  AS revenue_share_pct,
+  ROUND(AVG(order_revenue), 2) AS avg_order_value
+FROM order_level
+GROUP BY order_size;</code></pre></div>
+</div>
+<div class="laura">→ Für Laura: Ein Angebot für Gruppen und Firmen testen – große Bestellungen tragen fast 40 % des Umsatzes.</div></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>12 / 19</span></footer></section>
+<!-- ===== Folie 13 ===== -->
+<section class="slide q" data-n="13"><div class="in">
+<div class="kicker">Frage 8 · Aktion</div>
+<h2>Nachmittags-Deal 14–16 Uhr: +11.219 $ pro Jahr bei +10 %</h2>
+<div class="cols qcols">
+ <div class="col">
+  <div class="hero"><span class="big acc">+11.219 $</span><span class="herol">pro Jahr bei +10 % im Zeitfenster (112.194 × 0,10)</span></div>
+  <ul class="facts"><li>Fenster 14–16 Uhr heute: 112.194 $ = 13,7 % des Umsatzes, 2.940 Bestellungen</li><li>313,39 $ pro Tag (112.194 / 358) – Flaute an allen Wochentagen</li><li>Vorschlag: täglich 14–16 Uhr Pizza L zum Preis von M (L = 45,9 % des Umsatzes)</li></ul>
+  
+ </div>
+ <div class="col"><pre class="sql fit"><code>-- Q8: Zeitfenster 14:00–15:59
+WITH window_sales AS (
+  SELECT
+    SUM(CAST(p.price AS REAL) * CAST(od.quantity AS INTEGER)) AS revenue,
+    COUNT(DISTINCT o.order_id) AS orders,
+    COUNT(DISTINCT o.date) AS days
+  FROM orders o
+  JOIN order_details od USING (order_id)
+  JOIN pizzas p USING (pizza_id)
+  WHERE strftime(&#x27;%H&#x27;, o.time) IN (&#x27;14&#x27;, &#x27;15&#x27;)
+)
+SELECT
+  ROUND(revenue, 2) AS window_revenue,
+  orders,
+  days,
+  ROUND(revenue * 100.0
+        / (SELECT SUM(CAST(p2.price AS REAL) * CAST(od2.quantity AS INTEGER))
+           FROM order_details od2
+           JOIN pizzas p2 USING (pizza_id)), 1) AS revenue_share_pct,
+  ROUND(revenue / days, 2) AS revenue_per_day,
+  ROUND(revenue * 0.10, 2) AS plus_10pct
+FROM window_sales;</code></pre></div>
+</div>
+<div class="laura">→ Für Laura: Aktion 4–6 Wochen testen – der Rabatt kostet Marge, der Nettoeffekt ist offen.</div></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>13 / 19</span></footer></section>
+<!-- ===== Folie 14 ===== -->
+<section class="slide dash" data-n="14"><div class="in">
+<div class="kicker">Tableau-Dashboard</div>
+<h2>Laura kann selbst filtern: Monat, Kategorie, Größe</h2>
+<div class="dashwrap">
+ <!-- Tableau Public als iframe (zuverlässiger als 2 Embed-Skripte auf einer Seite); lädt erst, wenn die Folie geöffnet wird -->
+ <iframe class="tviz" data-w="1366" data-h="1040" data-src="https://public.tableau.com/views/pizza_dashboard_17908653158890/bersicht?:embed=y&:showVizHome=no&:tabs=n&:toolbar=y&:display_count=n&:language=de-DE" title="Tableau Dashboard Übersicht" loading="lazy"></iframe>
+ <img class="dashprint" src="https://public.tableau.com/static/images/pi/pizza_dashboard_17908653158890/bersicht/1.png" alt="Dashboard Übersicht (Screenshot)">
+</div>
+<div class="dashside">
+ <h3 class="h3">Live zeigen</h3>
+ <ol class="steps">
+  <li>Filter <b>Monat</b> → KPI und Heatmap ändern sich</li>
+  <li>Klick auf <b>Größe L</b> → alle Grafiken gefiltert (★ Aktion)</li>
+  <li>Parameter <b>Top N</b> 5 → 3 (★)</li>
+  <li>Story <b>„Empfehlungen“</b>: 4 Schritte (★)</li>
+ </ol>
+ <p class="small">Berechnete Felder: Ø pro Tag, Umsatzanteil (TOTAL), Bestellungen pro Wochentag (FIXED), Rang (RANK)</p>
+ <a class="open" href="https://public.tableau.com/views/pizza_dashboard_17908653158890/bersicht" target="_blank">↗ Vollbild in Tableau Public</a>
+</div></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>14 / 19</span></footer></section>
+<!-- ===== Folie 15 ===== -->
+<section class="slide dash story" data-n="15"><div class="in">
+<div class="kicker">Tableau-Story „Empfehlungen“ (★ Bonus)</div>
+<h2>Vier Schritte vom Überblick zu Lauras Entscheidungen</h2>
+<div class="dashwrap">
+ <iframe class="tviz" data-w="1400" data-h="1260" data-src="https://public.tableau.com/views/pizza_dashboard_17908653158890/Empfehlungen?:embed=y&:showVizHome=no&:tabs=n&:toolbar=y&:display_count=n&:language=de-DE" title="Tableau Story Empfehlungen" loading="lazy"></iframe>
+ <img class="dashprint" src="https://public.tableau.com/static/images/pi/pizza_dashboard_17908653158890/Empfehlungen/1.png" alt="Story Empfehlungen (Screenshot)">
+</div>
+<div class="dashside storyside">
+ <h3 class="h3">Schritte der Story</h3>
+ <ol class="steps big">
+  <li><b>Überblick</b> – KPI, Trend, Heatmap, Ranking</li>
+  <li><b>Schichtplan</b> – Heatmap Wochentag × Uhrzeit</li>
+  <li><b>Speisekarte</b> – Top/Flop mit Parameter Top N</li>
+  <li><b>Aktion</b> – Umsatzanteil Größe L</li>
+ </ol>
+  <a class="open" href="https://public.tableau.com/views/pizza_dashboard_17908653158890/Empfehlungen" target="_blank">↗ Vollbild in Tableau Public</a>
+</div></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>15 / 19</span></footer></section>
+<!-- ===== Folie 16 ===== -->
+<section class="slide " data-n="16"><div class="in">
+<div class="kicker">Erkenntnisse</div>
+<h2>Drei Dinge, die die Daten klar zeigen</h2>
+<div class="cards3 ins">
+ <div class="card"><div class="bigc acc">70,8 / 50,5</div><h3>Auslastung ist planbar</h3><p>Bestellungen pro Freitag vs. Sonntag; Spitzen täglich mittags und abends, Flaute 14–16 Uhr.</p></div>
+ <div class="card"><div class="bigc acc">45,9 %</div><h3>Umsatz ist konzentriert</h3><p>Größe L trägt fast die Hälfte; die 4 schwächsten Sorten nur 6,87 %.</p></div>
+ <div class="card"><div class="bigc acc">39,4 %</div><h3>Große Bestellungen zählen</h3><p>18,2 % der Bestellungen mit 4+ Pizzen bringen fast 40 % des Umsatzes.</p></div>
+</div></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>16 / 19</span></footer></section>
+<!-- ===== Folie 17 ===== -->
+<section class="slide " data-n="17"><div class="in">
+<div class="kicker">Empfehlungen an Laura</div>
+<h2>Drei Entscheidungen für Januar – jede mit Zahl</h2>
+<div class="recs">
+ <div class="rec"><div class="rn">1</div><div><h3>Schichtplan</h3>
+  <p>Personal auf <b>12–14 Uhr</b> und <b>17–19 Uhr</b> ausrichten, <b>freitags</b> verstärken (70,8 Bestellungen/Tag), Fr–Sa abends bis 20 Uhr. 14–16 Uhr und sonntags (50,5/Tag) kleinere Besetzung.</p>
+  <p class="eff">Vor 11 Uhr und ab 23 Uhr: 1, 8 und 28 Bestellungen im Jahr → Öffnungszeiten prüfen.</p></div></div>
+ <div class="rec"><div class="rn">2</div><div><h3>Speisekarte</h3>
+  <p><b>Brie Carre, Green Garden, Spinach Supreme, Mediterranean</b> streichen: höchstens <b>6,87 %</b> des Umsatzes (56.183 $), <b>6 Zutaten</b> weniger im Einkauf.</p>
+  <p class="eff">Spinach Pesto, Calabrese, Italian Vegetables (1,91–1,96 %) beobachten.</p></div></div>
+ <div class="rec"><div class="rn">3</div><div><h3>Aktion</h3>
+  <p><b>Nachmittags-Deal</b> täglich 14–16 Uhr: Pizza L zum Preis von M. Bei +10 % im Fenster <b>+11.219 $</b> pro Jahr.</p>
+  <p class="eff">4–6 Wochen testen; zusätzlich ein Firmenangebot prüfen (große Bestellungen = 39,4 % des Umsatzes).</p></div></div>
+</div></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>17 / 19</span></footer></section>
+<!-- ===== Folie 18 ===== -->
+<section class="slide " data-n="18"><div class="in">
+<div class="kicker">Grenzen und nächste Schritte</div>
+<h2>Was die Daten nicht beantworten</h2>
+<div class="cols lim">
+ <div class="col"><h3 class="h3">Grenzen</h3><ul class="facts">
+  <li>Nur Umsatz, keine Kosten und Marge → Nettoeffekt der Aktion offen</li>
+  <li>Nur ein Jahr → Saison und Trend nicht trennbar</li>
+  <li>Keine Kunden- und Personaldaten → wer bestellt groß, wie viele Mitarbeiter je Stunde</li>
+  <li>6,87 % ist eine Obergrenze: ein Teil der Gäste wählt eine andere Sorte</li>
+ </ul></div>
+ <div class="col"><h3 class="h3">Nächste Schritte</h3><ul class="facts">
+  <li>Aktion als Vorher/Nachher- oder A/B-Test messen (4–6 Wochen)</li>
+  <li>Uhrzeit und Wochentag großer Bestellungen auswerten → Firmenangebot</li>
+  <li>Kosten und Verderb der Zutaten erfassen</li>
+  <li>Personalstunden je Stunde mit Bestellungen abgleichen</li>
+ </ul></div>
+</div></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>18 / 19</span></footer></section>
+<!-- ===== Folie 19 ===== -->
+<section class="slide title" data-n="19"><div class="in">
+<div class="t-kicker">Vielen Dank!</div>
+<h1 class="t-h1">Fragen?</h1>
+<div class="links">
+ <div><span>GitHub</span><a href="https://github.com/SergiiVdovenkov/pizza-sales-analysis" target="_blank">github.com/SergiiVdovenkov/pizza-sales-analysis</a></div>
+ <div><span>Dashboard</span><a href="https://public.tableau.com/views/pizza_dashboard_17908653158890/bersicht" target="_blank">public.tableau.com/views/pizza_dashboard_17908653158890</a></div>
+ <div><span>Daten</span><a href="https://www.kaggle.com/datasets/mysarahmadbhat/pizza-place-sales" target="_blank">kaggle.com/datasets/mysarahmadbhat/pizza-place-sales</a></div>
+</div>
+<div class="t-meta"><b>Sergii Vdovenkov</b> · Data Analytics &amp; Engineering · Deutsche Tech Akademie</div></div><footer><span>Pizzeria-Umsatz 2015 · Sergii Vdovenkov</span><span>19 / 19</span></footer></section>
+</div></div>
+<div id="nav"><button id="prev" aria-label="Zurück">← Zurück</button><span id="count">1 / 19</span><button id="next" aria-label="Weiter">Weiter →</button></div>
+<script>
+/* ===== NICHT ÄNDERN: Navigation ===== */
+(function(){
+ var s=[].slice.call(document.querySelectorAll('.slide')),i=0,deck=document.getElementById('deck');
+ function fit(){var k=Math.min(innerWidth/1280,innerHeight/720)*0.98;deck.style.transform='scale('+k+')';}
+ function sizeViz(){document.querySelectorAll('.tviz').forEach(function(f){var w=+f.dataset.w,h=+f.dataset.h,box=f.parentNode;
+   var k=Math.min(760/w,560/h);f.style.width=w+'px';f.style.height=h+'px';f.style.transform='scale('+k+')';
+   box.style.width=Math.round(w*k)+'px';box.style.height=Math.round(h*k)+'px';
+   var side=box.parentNode.querySelector('.dashside');if(side)side.style.left=(64+Math.round(w*k)+28)+'px';});}
+ sizeViz();
+ function go(n){i=Math.max(0,Math.min(s.length-1,n));s.forEach(function(e,j){e.classList.toggle('active',j===i)});
+  document.getElementById('count').textContent=(i+1)+' / '+s.length;document.getElementById('bar').style.width=((i+1)/s.length*100)+'%';
+  var fr=s[i].querySelectorAll('.tviz');fr.forEach(function(f){if(!f.src)f.src=f.dataset.src;});
+  if(location.hash!=='#'+(i+1))history.replaceState(null,'','#'+(i+1));}
+ document.getElementById('prev').onclick=function(){go(i-1)};document.getElementById('next').onclick=function(){go(i+1)};
+ addEventListener('keydown',function(e){if(['ArrowRight','PageDown',' '].indexOf(e.key)>-1){e.preventDefault();go(i+1)}
+  else if(['ArrowLeft','PageUp'].indexOf(e.key)>-1){e.preventDefault();go(i-1)}else if(e.key==='Home')go(0);else if(e.key==='End')go(s.length-1)});
+ function fitSQL(){document.querySelectorAll('pre.sql.fit').forEach(function(p){var f=12;p.style.fontSize=f+'px';
+   while((p.scrollHeight>p.clientHeight+1||p.scrollWidth>p.clientWidth+1)&&f>7){f-=0.25;p.style.fontSize=f+'px';}});}
+ document.querySelectorAll('pre.sql.fit').forEach(function(p){p.title='Klick: SQL vergrößern';p.addEventListener('click',function(){
+   var z=p.parentNode.querySelector('.sqlzoom');if(z){z.remove();return;}var c=p.cloneNode(true);c.className='sql sqlzoom';c.style.fontSize='';
+   c.onclick=function(){c.remove()};p.closest('.slide').appendChild(c);});});
+ fitSQL(); if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitSQL); addEventListener('load',fitSQL);
+ addEventListener('resize',fit);fit();go((parseInt(location.hash.slice(1))||1)-1);
+})();
+</script>
+</body>
+</html>
