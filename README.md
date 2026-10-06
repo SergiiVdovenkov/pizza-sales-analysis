@@ -67,12 +67,14 @@ Dazu beantwortet die Analyse acht Kernfragen: Kennzahlen des Jahres · Entwicklu
 ### Q8: Aktion
 - „Nachmittags-Deal“ täglich 14–16 Uhr: Pizza L zum Preis von M
 - Heute 112.194 $ Umsatz in diesem Fenster (13,7 %); +10 % = +11.219 $ pro Jahr
+- Kosten des Rabatts (Q8b): 2.545 Pizzen L im Fenster × Preisdifferenz L–M = 9.929 $ pro Jahr
+- Break-even bei +8,9 % Umsatzzuwachs im Fenster (9.929 / 112.194); bei +10 % bleiben ≈ 1.290 $ übrig, vor Wareneinsatz
 
 ## 5. Drei Empfehlungen für Laura
 
 1. **Schichtplan:** Personal auf 12–14 Uhr und 17–19 Uhr ausrichten, freitags verstärken (70,8 Bestellungen/Tag), Fr–Sa abends bis 20 Uhr. 14–16 Uhr und sonntags (50,5/Tag) reicht eine kleinere Besetzung. Vor 11 Uhr und ab 23 Uhr: nur 1, 8 und 28 Bestellungen im Jahr → Öffnungszeiten prüfen.
 2. **Speisekarte:** Brie Carre, Green Garden, Spinach Supreme und Mediterranean streichen: höchstens 6,87 % des Umsatzes (56.183 $), 6 Zutaten weniger im Einkauf. Spinach Pesto, Calabrese und Italian Vegetables (1,91–1,96 %) beobachten.
-3. **Aktion:** „Nachmittags-Deal“ täglich 14–16 Uhr, Pizza L zum Preis von M. Bei +10 % im Zeitfenster +11.219 $ pro Jahr. 4–6 Wochen testen; zusätzlich ein Firmenangebot prüfen (große Bestellungen = 39,4 % des Umsatzes).
+3. **Aktion:** „Nachmittags-Deal“ täglich 14–16 Uhr, Pizza L zum Preis von M. Bei +10 % im Zeitfenster +11.219 $ pro Jahr, der Rabatt kostet bis zu 9.929 $ (Break-even +8,9 %, ≈ 1.290 $ übrig vor Wareneinsatz). 4–6 Wochen testen; zusätzlich ein Firmenangebot prüfen (große Bestellungen = 39,4 % des Umsatzes).
 
 ## 6. Dashboard
 
