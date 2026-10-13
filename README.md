@@ -1,109 +1,109 @@
-🇩🇪 Deutsch · [🇬🇧 English](README.en.md)
+🇬🇧 English · [🇩🇪 Deutsch](README.de.md)
 
-# 🍕 Umsatzanalyse einer Pizzeria
+# 🍕 Revenue Analysis of a Pizzeria
 
-**817.860 $ Umsatz · 21.350 Bestellungen · Ø 38,31 $ pro Bestellung**
+**$817,860 revenue · 21,350 orders · avg. $38.31 per order**
 
-Zwischenprojekt · Deutsche Tech Akademie · Data Analytics & Engineering
-Analyse der Kassendaten einer Pizzeria für das Jahr 2015 mit SQL und Tableau.
+Midterm project · Deutsche Tech Akademie · Data Analytics & Engineering
+Analysis of a pizzeria's point-of-sale data for the year 2015 with SQL and Tableau.
 
-## 1. Ausgangslage und Kernfragen
+## 1. Background and key questions
 
-Laura Martinez hat Ende des Jahres eine Pizzeria in New Jersey übernommen und den Kassenexport für das ganze Jahr 2015 erhalten. Im Januar muss sie drei Entscheidungen treffen:
+Laura Martinez took over a pizzeria in New Jersey at the end of the year and received the POS export for all of 2015. In January she has to make three decisions:
 
-1. **Schichtplan** – in ruhigen Stunden nicht zu viel Personal, in Stoßzeiten nicht überlastet.
-2. **Speisekarte** – welche Pizzen gestrichen werden können (zu viele Positionen, Zutaten verderben).
-3. **Aktion** – wann und mit welcher Aktion schwache Tage und Uhrzeiten gestärkt werden.
+1. **Shift schedule** – no excess staff in quiet hours, no overload at peak times.
+2. **Menu** – which pizzas can be dropped (too many items, ingredients spoil).
+3. **Promotion** – when and with which promotion to strengthen weak days and hours.
 
-Dazu beantwortet die Analyse acht Kernfragen: Kennzahlen des Jahres · Entwicklung nach Monaten · Auslastung nach Wochentagen und Uhrzeiten · Bestseller und Ladenhüter · Kategorien und Größen · Kandidaten für die Streichung · große Bestellungen · Aktion.
+To support these, the analysis answers eight key questions: key figures of the year · development by month · workload by weekday and hour · bestsellers and slow sellers · categories and sizes · candidates for removal · large orders · promotion.
 
 ## 2. Links
 
-| Was | Link |
+| What | Link |
 | --- | --- |
-| Datensatz (Kaggle) | [Pizza Place Sales](https://www.kaggle.com/datasets/mysarahmadbhat/pizza-place-sales) |
-| Dashboard (Tableau Public) | [Übersicht](https://public.tableau.com/views/pizza_dashboard_17908653158890/bersicht) |
-| Story mit Empfehlungen (Tableau Public) | [Empfehlungen](https://public.tableau.com/views/pizza_dashboard_17908653158890/Empfehlungen) |
-| Präsentation (PDF) | [presentation/presentation.pdf](presentation/presentation.pdf) |
-| Präsentation (HTML) | [presentation/index.html](presentation/index.html) |
-| SQL-Abfragen | [sql/queries.sql](sql/queries.sql) |
+| Dataset (Kaggle) | [Pizza Place Sales](https://www.kaggle.com/datasets/mysarahmadbhat/pizza-place-sales) |
+| Dashboard (Tableau Public) | [Overview](https://public.tableau.com/views/pizza_dashboard_17908653158890/bersicht) |
+| Story with recommendations (Tableau Public) | [Recommendations](https://public.tableau.com/views/pizza_dashboard_17908653158890/Empfehlungen) |
+| Presentation (PDF) | [presentation/presentation.pdf](presentation/presentation.pdf) |
+| Presentation (HTML) | [presentation/index.html](presentation/index.html) |
+| SQL queries | [sql/queries.sql](sql/queries.sql) |
 
-## 3. Daten und Werkzeuge
+## 3. Data and tools
 
-- 4 Tabellen: `orders` (21.350 Zeilen), `order_details` (48.620), `pizzas` (96), `pizza_types` (32)
-- Zeitraum: 01.01.2015 – 31.12.2015, keine fehlenden Werte, keine verwaisten Schlüssel
-- Auswahl für Tableau: VIEW `sales_lines` über alle 4 Tabellen, 1 Zeile = 1 Bestellposition, 12 Felder. Kontrolle: 48.620 Zeilen = `order_details`
-- **SQL**: SQLite Online – JOIN, CTE, Fensterfunktionen (`LAG`, `SUM() OVER`), VIEW
-- **Visualisierung**: Tableau Public · **Abgabe**: GitHub
+- 4 tables: `orders` (21,350 rows), `order_details` (48,620), `pizzas` (96), `pizza_types` (32)
+- Period: 1 Jan 2015 – 31 Dec 2015, no missing values, no orphaned keys
+- Selection for Tableau: VIEW `sales_lines` across all 4 tables, 1 row = 1 order line, 12 fields. Check: 48,620 rows = `order_details`
+- **SQL**: SQLite Online – JOIN, CTE, window functions (`LAG`, `SUM() OVER`), VIEW
+- **Visualization**: Tableau Public · **Submission**: GitHub
 
-## 4. Antworten auf die 8 Fragen
+## 4. Answers to the 8 questions
 
-### Q1: Kennzahlen 2015
-- Umsatz **817.860 $**, 21.350 Bestellungen, 49.574 Pizzen
-- Ø Bestellwert **38,31 $**, Ø 2,32 Pizzen pro Bestellung
+### Q1: Key figures 2015
+- Revenue **$817,860**, 21,350 orders, 49,574 pizzas
+- Avg. order value **$38.31**, avg. 2.32 pizzas per order
 
-### Q2: Entwicklung nach Monaten
-- Stärkster Monat: Juli mit 72.558 $ Umsatz, schwächster: Oktober mit 64.028 $
-- Kein klarer Jahrestrend, Abstand 13,3 %
+### Q2: Development by month
+- Strongest month: July with $72,558 revenue, weakest: October with $64,028
+- No clear annual trend, gap of 13.3 %
 
-### Q3: Auslastung nach Wochentagen und Uhrzeiten
-- Stärkster Tag: Freitag (70,8 Bestellungen/Tag), ruhigster: Sonntag (50,5)
-- Spitzen 12–14 und 17–19 Uhr, ruhige Phase 14–16 Uhr (je 4,1 Bestellungen pro Stunde)
+### Q3: Workload by weekday and hour
+- Strongest day: Friday (70.8 orders/day), quietest: Sunday (50.5)
+- Peaks at 12–2 pm and 5–7 pm, quiet period 2–4 pm (4.1 orders per hour each)
 
-### Q4: Bestseller und Ladenhüter
-- Umsatzstärkste Sorte: Thai Chicken (43.434 $), meistverkauft: Classic Deluxe (2.453 Stück)
-- Schlusslicht in beiden Listen: Brie Carre (11.589 $, 490 Stück)
+### Q4: Bestsellers and slow sellers
+- Highest-revenue pizza: Thai Chicken ($43,434), most sold: Classic Deluxe (2,453 units)
+- Last place in both lists: Brie Carre ($11,589, 490 units)
 
-### Q5: Kategorien und Größen
-- Kategorien fast gleich: 23,7 % bis 26,9 % des Umsatzes
-- Größe L bringt 45,9 % des Umsatzes, XL und XXL zusammen nur 1,8 %
+### Q5: Categories and sizes
+- Categories almost equal: 23.7 % to 26.9 % of revenue
+- Size L brings 45.9 % of revenue, XL and XXL together only 1.8 %
 
-### Q6: Kandidaten für die Streichung
-- 4 Sorten streichen: Brie Carre, Green Garden, Spinach Supreme, Mediterranean
-- Betroffen: höchstens 6,87 % des Umsatzes (56.183 $); 6 Zutaten kommen in keiner anderen Sorte vor
+### Q6: Candidates for removal
+- Remove 4 pizzas: Brie Carre, Green Garden, Spinach Supreme, Mediterranean
+- Affected: at most 6.87 % of revenue ($56,183); 6 ingredients do not appear in any other pizza
 
-### Q7: Große Bestellungen (4+ Pizzen)
-- 18,2 % der Bestellungen bringen 39,4 % des Umsatzes; Ø Bestellwert 83,14 $ statt 28,35 $
-- Ja, ein eigenes Angebot für Firmen lohnt sich zu prüfen – wer bestellt, zeigen die Daten nicht
+### Q7: Large orders (4+ pizzas)
+- 18.2 % of orders bring 39.4 % of revenue; avg. order value $83.14 instead of $28.35
+- Yes, a dedicated offer for companies is worth examining – the data does not show who is ordering
 
-### Q8: Aktion
-- „Nachmittags-Deal“ täglich 14–16 Uhr: Pizza L zum Preis von M
-- Heute 112.194 $ Umsatz in diesem Fenster (13,7 %); +10 % = +11.219 $ pro Jahr
-- Kosten des Rabatts (Q8b): 2.545 Pizzen L im Fenster × Preisdifferenz L–M = 9.929 $ pro Jahr
-- Break-even bei +8,9 % Umsatzzuwachs im Fenster (9.929 / 112.194); bei +10 % bleiben ≈ 1.290 $ übrig, vor Wareneinsatz
+### Q8: Promotion
+- "Afternoon Deal" daily 2–4 pm: pizza L at the price of M
+- Revenue in this window today: $112,194 (13.7 %); +10 % = +$11,219 per year
+- Cost of the discount (Q8b): 2,545 L pizzas in the window × price difference L–M = $9,929 per year
+- Break-even at +8.9 % revenue growth in the window (9,929 / 112,194); at +10 % about $1,290 remain, before cost of goods
 
-## 5. Drei Empfehlungen für Laura
+## 5. Three recommendations for Laura
 
-1. **Schichtplan:** Personal auf 12–14 Uhr und 17–19 Uhr ausrichten, freitags verstärken (70,8 Bestellungen/Tag), Fr–Sa abends bis 20 Uhr. 14–16 Uhr und sonntags (50,5/Tag) reicht eine kleinere Besetzung. Vor 11 Uhr und ab 23 Uhr: nur 1, 8 und 28 Bestellungen im Jahr → Öffnungszeiten prüfen.
-2. **Speisekarte:** Brie Carre, Green Garden, Spinach Supreme und Mediterranean streichen: höchstens 6,87 % des Umsatzes (56.183 $), 6 Zutaten weniger im Einkauf. Spinach Pesto, Calabrese und Italian Vegetables (1,91–1,96 %) beobachten.
-3. **Aktion:** „Nachmittags-Deal“ täglich 14–16 Uhr, Pizza L zum Preis von M. Bei +10 % im Zeitfenster +11.219 $ pro Jahr, der Rabatt kostet bis zu 9.929 $ (Break-even +8,9 %, ≈ 1.290 $ übrig vor Wareneinsatz). 4–6 Wochen testen; zusätzlich ein Firmenangebot prüfen (große Bestellungen = 39,4 % des Umsatzes).
+1. **Shift schedule:** Align staffing with 12–2 pm and 5–7 pm, reinforce on Fridays (70.8 orders/day), Fri–Sat evenings until 8 pm. 2–4 pm and Sundays (50.5/day) call for smaller staffing. Before 11 am and from 11 pm: only 1, 8 and 28 orders in the year → review opening hours.
+2. **Menu:** Remove Brie Carre, Green Garden, Spinach Supreme and Mediterranean: at most 6.87 % of revenue ($56,183), 6 fewer ingredients to purchase. Keep an eye on Spinach Pesto, Calabrese and Italian Vegetables (1.91–1.96 %).
+3. **Promotion:** "Afternoon Deal" daily 2–4 pm, pizza L at the price of M. At +10 % in the time window, +$11,219 per year; the discount costs up to $9,929 (break-even +8.9 %, about $1,290 remaining before cost of goods). Test for 4–6 weeks; additionally examine a corporate offer (large orders = 39.4 % of revenue).
 
 ## 6. Dashboard
 
 [![Dashboard](presentation/dashboard.png)](https://public.tableau.com/views/pizza_dashboard_17908653158890/bersicht)
 
-🔗 [Interaktives Dashboard auf Tableau Public](https://public.tableau.com/views/pizza_dashboard_17908653158890/bersicht) – Filter nach Monat, Kategorie und Größe, Parameter „Top N“, Klick-Aktionen, Story „Empfehlungen“.
+🔗 [Interactive dashboard on Tableau Public](https://public.tableau.com/views/pizza_dashboard_17908653158890/bersicht) – filters by month, category and size, "Top N" parameter, click actions, story "Recommendations".
 
-Hinweis zur Datenquelle: Das Dashboard nutzt die Auswahl `sales_lines` (48.620 Zeilen). Tableau Public hat die Dezimalpunkte der CSV-Datei mit deutscher Ländereinstellung nicht als Zahlen gelesen, deshalb ist dieselbe Auswahl als `exports/sales_lines.xlsx` angebunden. Inhalt und Kontrollsummen sind identisch mit `exports/sales_lines.csv`.
+Note on the data source: The dashboard uses the selection `sales_lines` (48,620 rows). With a German locale setting, Tableau Public did not read the decimal points of the CSV file as numbers, so the same selection is connected as `exports/sales_lines.xlsx`. Content and control totals are identical to `exports/sales_lines.csv`.
 
-## 7. Grenzen der Daten und nächste Schritte
+## 7. Data limitations and next steps
 
-- Nur Umsatz, keine Kosten und Marge → der Nettoeffekt der Aktion ist offen.
-- Nur ein Jahr → Saison und Trend lassen sich nicht trennen.
-- Keine Kunden- und Personaldaten → wer groß bestellt und wie viele Mitarbeiter je Stunde arbeiten, ist unbekannt.
-- Nächste Schritte: Aktion als Vorher/Nachher- oder A/B-Test messen, Uhrzeit und Wochentag großer Bestellungen auswerten, Kosten und Verderb der Zutaten erfassen.
+- Revenue only, no costs and margin → the net effect of the promotion is open.
+- Only one year → season and trend cannot be separated.
+- No customer or staff data → who orders in large quantities and how many employees work per hour is unknown.
+- Next steps: measure the promotion as a before/after or A/B test, analyze the time and weekday of large orders, record costs and spoilage of ingredients.
 
-## 8. Projektstruktur
+## 8. Project structure
 
 ```
 pizza-sales-analysis/
-├── README.md              # Projektbeschreibung, Kurzantworten, Links
-├── data/                  # 4 Original-CSV von Kaggle
+├── README.md              # Project description, short answers, links
+├── data/                  # 4 original CSVs from Kaggle
 ├── sql/
-│   └── queries.sql        # alle Abfragen mit Kommentaren und Ergebnissen
+│   └── queries.sql        # all queries with comments and results
 ├── exports/
-│   ├── sales_lines.csv    # Auswahl für Tableau (VIEW sales_lines)
-│   └── sales_lines.xlsx   # dieselbe Auswahl, Datenquelle des Dashboards
+│   ├── sales_lines.csv    # selection for Tableau (VIEW sales_lines)
+│   └── sales_lines.xlsx   # same selection, data source of the dashboard
 ├── tableau/
 │   └── pizza_dashboard.twbx
 └── presentation/
@@ -113,6 +113,6 @@ pizza-sales-analysis/
     └── dashboard.png
 ```
 
-## 9. Autor
+## 9. Author
 
 **Sergii Vdovenkov** · [GitHub](https://github.com/SergiiVdovenkov)
